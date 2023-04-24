@@ -1,12 +1,19 @@
-import { Collection, Entity, EntitySchema, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
-import { BaseEntity } from "./BaseEntity.js";
+import {Collection, Entity, EntitySchema, OneToMany, PrimaryKey, Property, Unique} from "@mikro-orm/core";
+import {BaseEntity} from "./BaseEntity.js";
 
-@Entity()
-export class User extends BaseEntity {	
-	@Property()
-	email!: string;
+@Entity({tableName: "users"})
+export class User extends BaseEntity {
+  @Property()
+  @Unique()
+  email!: string;
 
+  @Property()
+  name!: string;
+
+  @Property()
+  petType!: string;
 }
+
 // export const schema = new EntitySchema({
 //     class: User,
 //     extends: "BaseEntity",

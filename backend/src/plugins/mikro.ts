@@ -9,48 +9,48 @@ import fp from "fastify-plugin";
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
 
 type FastifyMikroOrmOptions = {
-	forkOnRequest?: boolean
+  forkOnRequest?: boolean
 }
 
 export type MikroORMPluginOptions = Options & FastifyMikroOrmOptions;
 
 declare module 'fastify' {
-	interface FastifyInstance {
-		db: Awaited<ReturnType<(typeof MikroORM)["init"]>>;
-	}
+  interface FastifyInstance {
+    db: Awaited<ReturnType<(typeof MikroORM)["init"]>>;
+  }
 
-	interface FastifyRequest {
-		db: Awaited<ReturnType<(typeof MikroORM)["init"]>>,
-		em: EntityManager | undefined;
-	}
+  interface FastifyRequest {
+    db: Awaited<ReturnType<(typeof MikroORM)["init"]>>,
+    em: EntityManager | undefined;
+  }
 }
 
 export const fastifyMikroORMCore: FastifyPluginAsync<MikroORMPluginOptions> = async function (fastify, options) {
-	if (options.forkOnRequest === undefined) {
-		options.forkOnRequest = true;
-	}
+  if (options.forkOnRequest === undefined) {
+    options.forkOnRequest = true;
+  }
 
-	const db = await MikroORM.init(options);
+  const db = await MikroORM.init(options);
 
-	// gives us access to `app.db`
-	fastify.decorate("db", db);
+  // gives us access to `app.db`
+  fastify.decorate("db", db);
 
-	if (options.forkOnRequest) {
-		fastify.addHook("onRequest", async function (this: typeof fastify, request, reply) {
-			request.db = Object.assign({}, this.db);
-			// Must fork context as per https://mikro-orm.io/docs/identity-map/
-			request.em = request.db.em.fork() as EntityManager;
-		});
-	} else {
-		fastify.addHook("onRequest", async function (this: typeof fastify, request, reply) {
-			request.db = this.db;
-			request.em = undefined;
-		});
-	}
+  if (options.forkOnRequest) {
+    fastify.addHook("onRequest", async function (this: typeof fastify, request, reply) {
+      request.db = Object.assign({}, this.db);
+      // Must fork context as per https://mikro-orm.io/docs/identity-map/
+      request.em = request.db.em.fork() as EntityManager;
+    });
+  } else {
+    fastify.addHook("onRequest", async function (this: typeof fastify, request, reply) {
+      request.db = this.db;
+      request.em = undefined;
+    });
+  }
 
-	fastify.addHook("onClose", () => db.close());
+  fastify.addHook("onClose", () => db.close());
 };
 
 export const FastifyMikroOrmPlugin = fp(fastifyMikroORMCore, {
-	name: "fastify-mikro-orm",
+  name: "fastify-mikro-orm",
 });
