@@ -17,7 +17,7 @@ ENV ADDRESS=0.0.0.0 PORT=8080 DB_HOST=postgres DB_PORT=5432 DB_NAME=doggr DB_USE
 
 RUN pnpm build
 
-# We cannot do {RUN pnpm db:reset} her because docker will not connect to the network at build time
+# We cannot do {RUN pnpm db:reset} here because docker will not connect to the network at build time
 #RUN pnpm db:reset
 
 CMD ["pnpm", "start:prod"]
