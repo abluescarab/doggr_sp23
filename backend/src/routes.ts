@@ -100,7 +100,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
         return reply.status(401).send({ message: err });
       }
 
-      const user = await request.em.findOne(User, { email },
+      const user = await request.em.findOne(User, { email });/*,
         {
           populate: [ // Collection names in User.ts
             "matches",
@@ -108,9 +108,11 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
             "sent_messages",
             "received_messages"
           ]
-        });
+        });*/
 
-      await request.em.remove(user).flush();
+      user.deleted_at = new Date();
+      await request.em.flush();
+      // await request.em.remove(user).flush();
 
       console.log(user);
       reply.send(user);
@@ -242,8 +244,11 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       }
 
       const message = await request.em.findOne(Message, { messageId });
+      message.deleted_at = new Date();
 
-      await request.em.remove(message).flush();
+      await request.em.flush();
+
+      // await request.em.remove(message).flush();
       console.log(message);
       reply.send(message);
     }
@@ -269,7 +274,12 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       const theSender = await request.em.findOne(User, { email: sender });
       const messages = await request.em.find(Message, { sender: theSender });
 
-      await request.em.remove(messages).flush();
+      messages.forEach((m) => {
+        m.deleted_at = new Date();
+      });
+
+      // await request.em.remove(messages).flush();
+      await request.em.flush();
       console.log(messages);
       reply.send(messages);
     }

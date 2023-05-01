@@ -49,6 +49,9 @@ export class User extends BaseEntity {
     { cascade: [Cascade.PERSIST, Cascade.REMOVE] }
   )
   received_messages!: Collection<Message>;
+
+  @Property()
+  deleted_at?: Date = null;
 }
 
 // export const schema = new EntitySchema({

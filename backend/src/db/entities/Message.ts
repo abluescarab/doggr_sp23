@@ -23,4 +23,7 @@ export class Message {
 
   @Property()
   created_at = new Date(); // when the message was sent
+
+  @Property()
+  deleted_at?: Date = null;
 }
