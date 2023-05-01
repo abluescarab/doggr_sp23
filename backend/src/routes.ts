@@ -5,23 +5,38 @@ import { Match } from "./db/entities/Match.js";
 import { Message } from "./db/entities/Message.js";
 import { hasBadWord } from "./filter.js";
 
+/**
+ * Creates all routes for the Doggr app.
+ * @param app app instance
+ * @param _options options to pass
+ * @constructor
+ */
 async function DoggrRoutes(app: FastifyInstance, _options = {}) {
   if(!app) {
     throw new Error("Fastify instance has no value during routes construction");
   }
 
-  app.get('/hello', async (request: FastifyRequest, reply: FastifyReply) => {
-    return 'hello';
+  //----------------------------------------------------------------------------
+  // Testing Functionality
+  app.get("/hello", async (request, reply) => {
+    return "hello";
   });
 
-  app.get("/dbTest", async (request: FastifyRequest, reply: FastifyReply) => {
+  app.get("/dbTest", async (request, reply) => {
     return request.em.find(User, {});
   });
 
+  // read *all* messages
+  app.get("/messageTest", async (request, reply) => {
+    return request.em.find(Message, {});
+  });
+
+  //----------------------------------------------------------------------------
+  // User Functionality
   // new user
   app.post<{
     Body: ICreateUsersBody
-  }>("/users", async (request, reply: FastifyReply) => {
+  }>("/users", async (request, reply) => {
     const { name, email, petType } = request.body;
 
     try {
@@ -38,16 +53,17 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     }
     catch(err) {
       console.log("Failed to create new user: ", err.message);
-      return reply.status(500).send({ message: err.message });
+      return reply.status(500).send(err);
     }
   });
 
-  // read
-  app.search("/users", async (request, reply: FastifyReply) => {
+  // read user
+  app.search("/users", async (request, reply) => {
     const { email } = request.body;
 
     try {
       const user = await request.em.findOne(User, { email });
+
       console.log(user);
       reply.send(user);
     }
@@ -57,7 +73,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     }
   });
 
-  // update
+  // update user
   app.put<{ Body: ICreateUsersBody }>("/users", async (request, reply) => {
     const { name, email, petType } = request.body;
 
@@ -71,7 +87,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     reply.send(user);
   });
 
-  // delete
+  // delete user
   app.delete<{
     Body: { email: string, password: string }
   }>("/users", async (request, reply) => {
@@ -79,13 +95,23 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
     try {
       if(password != process.env.ADMIN_PASS) {
-        console.error("Failed to delete user: Invalid admin password");
-        reply.status(401).send("Failed to delete user: Invalid admin password");
+        const err = "Failed to delete user: Invalid admin password";
+        console.error(err);
+        return reply.status(401).send({ message: err });
       }
 
-      const user = await request.em.findOne(User, { email });
+      const user = await request.em.findOne(User, { email },
+        {
+          populate: [ // Collection names in User.ts
+            "matches",
+            "matched_by",
+            "sent_messages",
+            "received_messages"
+          ]
+        });
 
       await request.em.remove(user).flush();
+
       console.log(user);
       reply.send(user);
     }
@@ -95,6 +121,8 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     }
   });
 
+  //----------------------------------------------------------------------------
+  // Match Functionality
   // add match
   app.post<{
     Body: { email: string, matchee_email: string }
@@ -118,11 +146,6 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
   //----------------------------------------------------------------------------
   // Message Functionality
-  // read *all* messages
-  app.get("/messageTest", async (request, reply) => {
-    return request.em.find(Message, {});
-  });
-
   // read all received messages
   app.search<{
     Body: { receiver: string }
@@ -186,7 +209,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     }
     catch(err) {
       console.log("Failed to create new message: ", err.message);
-      return reply.status(500).send({ message: err.message });
+      return reply.status(500).send(err);
     }
   });
 
@@ -207,11 +230,17 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
   // delete message
   app.delete<{
-    Body: { messageId: number }
+    Body: { messageId: number, password: string }
   }>("/messages", async (request, reply) => {
-    const { messageId } = request.body;
+    const { messageId, password } = request.body;
 
     try {
+      if(password != process.env.ADMIN_PASS) {
+        const err = "Failed to delete message: Invalid admin password";
+        console.error(err);
+        return reply.status(401).send({ message: err });
+      }
+
       const message = await request.em.findOne(Message, { messageId });
 
       await request.em.remove(message).flush();
@@ -226,11 +255,17 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
   // delete all messages
   app.delete<{
-    Body: { sender: string }
+    Body: { sender: string, password: string }
   }>("/messages/all", async (request, reply) => {
-    const { sender } = request.body;
+    const { sender, password } = request.body;
 
     try {
+      if(password != process.env.ADMIN_PASS) {
+        const err = "Failed to delete messages: Invalid admin password";
+        console.error(err);
+        return reply.status(401).send({ message: err });
+      }
+
       const theSender = await request.em.findOne(User, { email: sender });
       const messages = await request.em.find(Message, { sender: theSender });
 
