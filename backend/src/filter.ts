@@ -460,5 +460,9 @@ const words = [
 ];
 
 export function hasBadWord(message: string) {
-  return words.some(word => message.includes(word));
+  return words.some(word => {
+    // regex from https://stackoverflow.com/a/35478115/567983
+    const w = word.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+    return new RegExp(`\\b(${w})\\b`).test(message);
+  });
 }
