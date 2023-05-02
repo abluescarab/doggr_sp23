@@ -7,31 +7,31 @@ export class UserSeeder extends Seeder {
     em.create(User, {
       name: "Spot",
       email: "email@email.com",
-      petType: "Dog"
+      petType: "Dog",
     });
 
     em.create(User, {
       name: "Dogbert",
       email: "email2@email.com",
-      petType: "Dog"
+      petType: "Dog",
     });
 
     em.create(User, {
       name: "Doglord",
       email: "email3@email.com",
-      petType: "Dog"
+      petType: "Dog",
     });
 
     em.create(User, {
       name: "NotaDog",
       email: "email4@email.com",
-      petType: "Cat"
+      petType: "Cat",
     });
 
     em.create(User, {
       name: "NotaDogsFriend",
       email: "email5@email.com",
-      petType: "Cat"
+      petType: "Cat",
     });
   }
 }

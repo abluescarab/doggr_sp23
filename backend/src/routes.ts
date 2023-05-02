@@ -17,7 +17,7 @@ async function error(reply, code, message) {
  * @constructor
  */
 async function DoggrRoutes(app: FastifyInstance, _options = {}) {
-  if(!app) {
+  if (!app) {
     throw new Error("Fastify instance has no value during routes construction");
   }
 
@@ -40,29 +40,32 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
   // User Functionality
   // new user
   app.post<{
-    Body: ICreateUsersBody
+    Body: ICreateUsersBody;
   }>("/users", async (request, reply) => {
     const { name, email, petType } = request.body;
 
     try {
       const existing = await request.em.findOne(User, { email });
 
-      if(existing != null) {
-        return error(reply, 500, `User with email address ${email} already exists`);
+      if (existing != null) {
+        return error(
+          reply,
+          500,
+          `User with email address ${email} already exists`
+        );
       }
 
       const user = await request.em.create(User, {
         name,
         email,
-        petType
+        petType,
       });
 
       await request.em.flush();
 
       console.log("Created new user: ", user);
       return reply.send(user);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, `Failed to create new user: ${err.message}`);
     }
   });
@@ -74,13 +77,12 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     try {
       const user = await request.em.findOne(User, { email });
 
-      if(user == null || user.deleted_at != null) {
+      if (user == null || user.deleted_at != null) {
         return error(reply, 404, `User with email address ${email} not found`);
       }
 
       reply.send(user);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, err.message);
     }
   });
@@ -91,7 +93,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
     const user = await request.em.findOne(User, { email });
 
-    if(user == null || user.deleted_at != null) {
+    if (user == null || user.deleted_at != null) {
       return error(reply, 404, `User with email address ${email} not found`);
     }
 
@@ -106,16 +108,20 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
   // delete user
   app.delete<{
-    Body: { email: string, password: string }
+    Body: { email: string; password: string };
   }>("/users", async (request, reply) => {
     const { email, password } = request.body;
 
     try {
-      if(password != process.env.ADMIN_PASS) {
-        return error(reply, 404, "Failed to delete user: Invalid admin password");
+      if (password != process.env.ADMIN_PASS) {
+        return error(
+          reply,
+          404,
+          "Failed to delete user: Invalid admin password"
+        );
       }
 
-      const user = await request.em.findOne(User, { email });/*,
+      const user = await request.em.findOne(User, { email }); /*,
         {
           populate: [ // Collection names in User.ts
             "matches",
@@ -125,7 +131,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
           ]
         });*/
 
-      if(user == null || user.deleted_at != null) {
+      if (user == null || user.deleted_at != null) {
         return error(reply, 404, `User with email address ${email} not found`);
       }
 
@@ -135,8 +141,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
       console.log(user);
       reply.send(user);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, err.message);
     }
   });
@@ -145,7 +150,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
   // Match Functionality
   // add match
   app.post<{
-    Body: { email: string, matchee_email: string }
+    Body: { email: string; matchee_email: string };
   }>("/match", async (request, reply) => {
     const { email, matchee_email } = request.body;
 
@@ -154,19 +159,22 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       const owner = await request.em.findOne(User, { email });
       const match = await request.em.create(Match, { owner, matchee });
 
-      if(matchee == null || matchee.deleted_at != null) {
-        return error(reply, 404, `User with email address ${matchee_email} not found`);
+      if (matchee == null || matchee.deleted_at != null) {
+        return error(
+          reply,
+          404,
+          `User with email address ${matchee_email} not found`
+        );
       }
 
-      if(owner == null || owner.deleted_at != null) {
+      if (owner == null || owner.deleted_at != null) {
         return error(reply, 404, `User with email address ${email} not found`);
       }
 
       await request.em.flush();
       console.log(match);
       return reply.send(match);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, err.message);
     }
   });
@@ -175,50 +183,52 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
   // Message Functionality
   // read all received messages
   app.search<{
-    Body: { receiver: string }
+    Body: { receiver: string };
   }>("/messages", async (request, reply) => {
     const { receiver } = request.body;
 
     try {
       const theReceiver = await request.em.findOne(User, { email: receiver });
 
-      if(theReceiver == null || theReceiver.deleted_at != null) {
-        return error(reply, 404, `User with email address ${receiver} not found`);
+      if (theReceiver == null || theReceiver.deleted_at != null) {
+        return error(
+          reply,
+          404,
+          `User with email address ${receiver} not found`
+        );
       }
 
       const messages = await request.em.find(Message, {
         receiver: theReceiver,
-        deleted_at: null
+        deleted_at: null,
       });
       console.log(messages);
       reply.send(messages);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, err.message);
     }
   });
 
   // read all sent messages
   app.search<{
-    Body: { sender: string }
+    Body: { sender: string };
   }>("/messages/sent", async (request, reply) => {
     const { sender } = request.body;
 
     try {
       const theSender = await request.em.findOne(User, { email: sender });
 
-      if(theSender == null || theSender.deleted_at != null) {
+      if (theSender == null || theSender.deleted_at != null) {
         return error(reply, 404, `User with email address ${sender} not found`);
       }
 
       const messages = await request.em.find(Message, {
         sender: theSender,
-        deleted_at: null
+        deleted_at: null,
       });
       console.log(messages);
       reply.send(messages);
-    }
-    catch(err) {
+    } catch (err) {
       console.error(err);
       reply.status(500).send(err);
     }
@@ -226,13 +236,14 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
   // create message
   app.post<{
-    Body: { sender: string, receiver: string, message: string }
+    Body: { sender: string; receiver: string; message: string };
   }>("/messages", async (request, reply) => {
     const { sender, receiver, message } = request.body;
 
     try {
-      if(hasBadWord(message)) {
-        const err = "Failed to create new message: Inappropriate language in message";
+      if (hasBadWord(message)) {
+        const err =
+          "Failed to create new message: Inappropriate language in message";
         console.log(err);
         return reply.status(500).send({ message: err });
       }
@@ -240,38 +251,43 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       const theSender = await request.em.findOne(User, { email: sender });
       const theReceiver = await request.em.findOne(User, { email: receiver });
 
-      if(theSender == null || theSender.deleted_at != null) {
+      if (theSender == null || theSender.deleted_at != null) {
         return error(reply, 404, `User with email address ${sender} not found`);
       }
 
-      if(theReceiver == null || theReceiver.deleted_at != null) {
-        return error(reply, 404, `User with email address ${receiver} not found`);
+      if (theReceiver == null || theReceiver.deleted_at != null) {
+        return error(
+          reply,
+          404,
+          `User with email address ${receiver} not found`
+        );
       }
 
       const newMessage = await request.em.create(Message, {
         sender: theSender,
         receiver: theReceiver,
-        message
+        message,
       });
 
       await request.em.flush();
       console.log(newMessage);
       return reply.send(newMessage);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, `Failed to create new message: ${err.message}`);
     }
   });
 
   // update message
   app.put<{
-    Body: { messageId: number, message: string }
+    Body: { messageId: number; message: string };
   }>("/messages", async (request, reply) => {
     const { messageId, message } = request.body;
 
-    const theMessage = await request.em.findOne(Message, { messageId: messageId });
+    const theMessage = await request.em.findOne(Message, {
+      messageId: messageId,
+    });
 
-    if(theMessage == null || theMessage.deleted_at != null) {
+    if (theMessage == null || theMessage.deleted_at != null) {
       return error(reply, 404, `Message with ID ${messageId} not found`);
     }
 
@@ -285,12 +301,12 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
   // delete message
   app.delete<{
-    Body: { messageId: number, password: string }
+    Body: { messageId: number; password: string };
   }>("/messages", async (request, reply) => {
     const { messageId, password } = request.body;
 
     try {
-      if(password != process.env.ADMIN_PASS) {
+      if (password != process.env.ADMIN_PASS) {
         const err = "Failed to delete message: Invalid admin password";
         console.error(err);
         return reply.status(401).send({ message: err });
@@ -298,7 +314,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
       const message = await request.em.findOne(Message, { messageId });
 
-      if(message == null || message.deleted_at != null) {
+      if (message == null || message.deleted_at != null) {
         return error(reply, 404, `Message with ID ${messageId} not found`);
       }
 
@@ -309,20 +325,19 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       // await request.em.remove(message).flush();
       console.log(message);
       reply.send(message);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, err.message);
     }
   });
 
   // delete all messages
   app.delete<{
-    Body: { sender: string, password: string }
+    Body: { sender: string; password: string };
   }>("/messages/all", async (request, reply) => {
     const { sender, password } = request.body;
 
     try {
-      if(password != process.env.ADMIN_PASS) {
+      if (password != process.env.ADMIN_PASS) {
         const err = "Failed to delete messages: Invalid admin password";
         console.error(err);
         return reply.status(401).send({ message: err });
@@ -330,13 +345,13 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
       const theSender = await request.em.findOne(User, { email: sender });
 
-      if(theSender == null || theSender.deleted_at != null) {
+      if (theSender == null || theSender.deleted_at != null) {
         return error(reply, 404, `User with email address ${sender} not found`);
       }
 
       const messages = await request.em.find(Message, {
         sender: theSender,
-        deleted_at: null
+        deleted_at: null,
       });
 
       messages.forEach((m) => {
@@ -347,8 +362,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       await request.em.flush();
       console.log(messages);
       reply.send(messages);
-    }
-    catch(err) {
+    } catch (err) {
       return error(reply, 500, err.message);
     }
   });

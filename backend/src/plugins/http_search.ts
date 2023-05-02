@@ -1,4 +1,4 @@
-import {FastifyInstance} from "fastify";
+import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
 declare module "fastify" {
@@ -7,12 +7,15 @@ declare module "fastify" {
   }
 }
 
-export const fastifySearchHttpMethod = async function (app: FastifyInstance, options) {
+export const fastifySearchHttpMethod = async function (
+  app: FastifyInstance,
+  options
+) {
   const search = function search<T>(path, handler) {
     app.route<T>({
       method: "SEARCH",
       url: path,
-      handler: handler
+      handler: handler,
     });
   };
 
@@ -20,5 +23,5 @@ export const fastifySearchHttpMethod = async function (app: FastifyInstance, opt
 };
 
 export const FastifySearchHttpMethodPlugin = fp(fastifySearchHttpMethod, {
-  name: "fastify-search-http-method"
+  name: "fastify-search-http-method",
 });

@@ -5,7 +5,7 @@ import type { Rel } from "@mikro-orm/core";
 @Entity()
 export class Match {
   @ManyToOne({ primary: true })
-  owner!: Rel<User>;   // person who swiped
+  owner!: Rel<User>; // person who swiped
 
   @ManyToOne({ primary: true })
   matchee!: Rel<User>; // person swiped on

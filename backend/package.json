@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --no-warnings=ExperimentalWarning src/index.ts",
+    "fmt": "prettier --write .",
     "lint": "eslint . --ext .ts",
     "check": "pnpm fmt && pnpm lint",
     "test": "NODE_NO_WARNINGS=1 tap test/",
