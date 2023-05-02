@@ -5,6 +5,11 @@ import { Match } from "./db/entities/Match.js";
 import { Message } from "./db/entities/Message.js";
 import { hasBadWord } from "./filter.js";
 
+async function error(reply, code, message) {
+  console.log(message);
+  return reply.status(code).send({ message: message });
+}
+
 /**
  * Creates all routes for the Doggr app.
  * @param app app instance
@@ -40,6 +45,12 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     const { name, email, petType } = request.body;
 
     try {
+      const existing = await request.em.findOne(User, { email });
+
+      if(existing != null) {
+        return error(reply, 500, `User with email address ${email} already exists`);
+      }
+
       const user = await request.em.create(User, {
         name,
         email,
@@ -52,8 +63,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       return reply.send(user);
     }
     catch(err) {
-      console.log("Failed to create new user: ", err.message);
-      return reply.status(500).send(err);
+      return error(reply, 500, `Failed to create new user: ${err.message}`);
     }
   });
 
@@ -64,12 +74,14 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     try {
       const user = await request.em.findOne(User, { email });
 
-      console.log(user);
+      if(user == null || user.deleted_at != null) {
+        return error(reply, 404, `User with email address ${email} not found`);
+      }
+
       reply.send(user);
     }
     catch(err) {
-      console.error(err);
-      reply.status(500).send(err);
+      return error(reply, 500, err.message);
     }
   });
 
@@ -78,6 +90,11 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     const { name, email, petType } = request.body;
 
     const user = await request.em.findOne(User, { email });
+
+    if(user == null || user.deleted_at != null) {
+      return error(reply, 404, `User with email address ${email} not found`);
+    }
+
     user.name = name;
     user.petType = petType;
 
@@ -95,9 +112,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
     try {
       if(password != process.env.ADMIN_PASS) {
-        const err = "Failed to delete user: Invalid admin password";
-        console.error(err);
-        return reply.status(401).send({ message: err });
+        return error(reply, 404, "Failed to delete user: Invalid admin password");
       }
 
       const user = await request.em.findOne(User, { email });/*,
@@ -110,6 +125,10 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
           ]
         });*/
 
+      if(user == null || user.deleted_at != null) {
+        return error(reply, 404, `User with email address ${email} not found`);
+      }
+
       user.deleted_at = new Date();
       await request.em.flush();
       // await request.em.remove(user).flush();
@@ -118,8 +137,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       reply.send(user);
     }
     catch(err) {
-      console.error(err);
-      reply.status(500).send(err);
+      return error(reply, 500, err.message);
     }
   });
 
@@ -136,13 +154,20 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       const owner = await request.em.findOne(User, { email });
       const match = await request.em.create(Match, { owner, matchee });
 
+      if(matchee == null || matchee.deleted_at != null) {
+        return error(reply, 404, `User with email address ${matchee_email} not found`);
+      }
+
+      if(owner == null || owner.deleted_at != null) {
+        return error(reply, 404, `User with email address ${email} not found`);
+      }
+
       await request.em.flush();
       console.log(match);
       return reply.send(match);
     }
     catch(err) {
-      console.error(err);
-      return reply.status(500).send(err);
+      return error(reply, 500, err.message);
     }
   });
 
@@ -156,13 +181,20 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
     try {
       const theReceiver = await request.em.findOne(User, { email: receiver });
-      const messages = await request.em.find(Message, { receiver: theReceiver });
+
+      if(theReceiver == null || theReceiver.deleted_at != null) {
+        return error(reply, 404, `User with email address ${receiver} not found`);
+      }
+
+      const messages = await request.em.find(Message, {
+        receiver: theReceiver,
+        deleted_at: null
+      });
       console.log(messages);
       reply.send(messages);
     }
     catch(err) {
-      console.error(err);
-      reply.status(500).send(err);
+      return error(reply, 500, err.message);
     }
   });
 
@@ -174,7 +206,15 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
     try {
       const theSender = await request.em.findOne(User, { email: sender });
-      const messages = await request.em.find(Message, { sender: theSender });
+
+      if(theSender == null || theSender.deleted_at != null) {
+        return error(reply, 404, `User with email address ${sender} not found`);
+      }
+
+      const messages = await request.em.find(Message, {
+        sender: theSender,
+        deleted_at: null
+      });
       console.log(messages);
       reply.send(messages);
     }
@@ -199,6 +239,15 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
       const theSender = await request.em.findOne(User, { email: sender });
       const theReceiver = await request.em.findOne(User, { email: receiver });
+
+      if(theSender == null || theSender.deleted_at != null) {
+        return error(reply, 404, `User with email address ${sender} not found`);
+      }
+
+      if(theReceiver == null || theReceiver.deleted_at != null) {
+        return error(reply, 404, `User with email address ${receiver} not found`);
+      }
+
       const newMessage = await request.em.create(Message, {
         sender: theSender,
         receiver: theReceiver,
@@ -210,8 +259,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       return reply.send(newMessage);
     }
     catch(err) {
-      console.log("Failed to create new message: ", err.message);
-      return reply.status(500).send(err);
+      return error(reply, 500, `Failed to create new message: ${err.message}`);
     }
   });
 
@@ -222,6 +270,11 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
     const { messageId, message } = request.body;
 
     const theMessage = await request.em.findOne(Message, { messageId: messageId });
+
+    if(theMessage == null || theMessage.deleted_at != null) {
+      return error(reply, 404, `Message with ID ${messageId} not found`);
+    }
+
     theMessage.message = message;
 
     // persist object changes to database
@@ -244,6 +297,11 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       }
 
       const message = await request.em.findOne(Message, { messageId });
+
+      if(message == null || message.deleted_at != null) {
+        return error(reply, 404, `Message with ID ${messageId} not found`);
+      }
+
       message.deleted_at = new Date();
 
       await request.em.flush();
@@ -253,8 +311,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       reply.send(message);
     }
     catch(err) {
-      console.error(err);
-      reply.status(500).send(err);
+      return error(reply, 500, err.message);
     }
   });
 
@@ -272,7 +329,15 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       }
 
       const theSender = await request.em.findOne(User, { email: sender });
-      const messages = await request.em.find(Message, { sender: theSender });
+
+      if(theSender == null || theSender.deleted_at != null) {
+        return error(reply, 404, `User with email address ${sender} not found`);
+      }
+
+      const messages = await request.em.find(Message, {
+        sender: theSender,
+        deleted_at: null
+      });
 
       messages.forEach((m) => {
         m.deleted_at = new Date();
@@ -284,8 +349,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
       reply.send(messages);
     }
     catch(err) {
-      console.error(err);
-      reply.status(500).send(err);
+      return error(reply, 500, err.message);
     }
   });
 }
