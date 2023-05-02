@@ -22,7 +22,7 @@
     "migration:up": "pnpm mikro-orm-esm migration:up",
     "migration:down": "pnpm mikro-orm-esm migration:down",
     "migration:list": "pnpm mikro-orm-esm migration:list",
-    "docs:generate": "rimraf ./doc/ && typedoc --options typedoc.json"
+    "docs:generate": "rimraf ./doc/ && typedoc --options typedoc.json --plugin typedoc-plugin-merge-modules"
   },
   "scriptsComments": {
     "dev": "Runs watcher dev server, see https://github.com/nodejs/node/issues/30810#issuecomment-1446093458 for no-warnings",
@@ -60,6 +60,7 @@
     "ts-morph": "^17.0.1",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24.6",
+    "typedoc-plugin-merge-modules": "^5.0.0",
     "typescript": "^5.0.4"
   },
   "mikro-orm": {
