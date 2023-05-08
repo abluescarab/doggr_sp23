@@ -2,12 +2,14 @@ import { useState } from "react";
 import reactLogo from "@images/react.svg";
 import viteLogo from "/vite.svg";
 import "@css/App.css";
+import { Button, Header } from "@/components/Components.tsx";
 
 // This is our first React "Component"
 export function App() {
   return (
     <div className={"app"}>
-      <h1>Doggr</h1>
+      <Header />
+      <Button />
     </div>
   );
 
