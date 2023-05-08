@@ -9,27 +9,29 @@ import fp from "fastify-plugin";
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
 
 type FastifyMikroOrmOptions = {
-  forkOnRequest?: boolean;
+	forkOnRequest?: boolean;
 };
 
 export type MikroORMPluginOptions = Options & FastifyMikroOrmOptions;
 
 declare module "fastify" {
-  interface FastifyInstance {
-    db: Awaited<ReturnType<(typeof MikroORM)["init"]>>;
-  }
+	interface FastifyInstance {
+		db: Awaited<ReturnType<(typeof MikroORM)["init"]>>;
+	}
 
-  interface FastifyRequest {
-    db: Awaited<ReturnType<(typeof MikroORM)["init"]>>;
-    em: EntityManager | undefined;
-  }
+	interface FastifyRequest {
+		db: Awaited<ReturnType<(typeof MikroORM)["init"]>>;
+		em: EntityManager | undefined;
+	}
 }
 
-export const fastifyMikroORMCore: FastifyPluginAsync<MikroORMPluginOptions> =
-  async function (fastify, options) {
-    if (options.forkOnRequest === undefined) {
-      options.forkOnRequest = true;
-    }
+export const fastifyMikroORMCore: FastifyPluginAsync<MikroORMPluginOptions> = async function (
+	fastify,
+	options
+) {
+	if (options.forkOnRequest === undefined) {
+		options.forkOnRequest = true;
+	}
 
     const db = await MikroORM.init(options);
 

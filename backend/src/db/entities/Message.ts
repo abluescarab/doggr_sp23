@@ -1,24 +1,21 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from "@mikro-orm/core";
-import type { Rel } from "@mikro-orm/core";
+import { Entity, Property, ManyToOne, Cascade } from "@mikro-orm/core";
+// Control + click these imports to view their actual code/type
+// Also see identity functions here - https://betterprogramming.pub/typescript-generics-90be93d8c292
+import type {Ref, Rel} from "@mikro-orm/core";
+import { DoggrBaseEntity } from "./DoggrBaseEntity.js";
 import { User } from "./User.js";
 
 @Entity()
-export class Message {
-  @PrimaryKey()
-  messageId!: number; // auto increment unique id
+export class Message extends DoggrBaseEntity {
 
-  @ManyToOne()
-  sender!: Rel<User>; // user who sent the message
+	// The person who performed the match/swiped right
+	@ManyToOne()
+	sender!: Ref<User>;
 
-  @ManyToOne()
-  receiver!: Rel<User>; // user who received the message
+	// The account whose profile was swiped-right-on
+	@ManyToOne('User')
+	receiver!: Rel<User>;
 
-  @Property()
-  message!: string; // message text
-
-  @Property()
-  created_at = new Date(); // when the message was sent
-
-  @Property()
-  deleted_at?: Date = null;
+	@Property()
+	message!: string;
 }

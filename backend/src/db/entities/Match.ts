@@ -1,15 +1,22 @@
-import { Entity, ManyToOne, Property } from "@mikro-orm/core";
+import { Entity, Property, Unique, ManyToOne } from "@mikro-orm/core";
+import { SoftDeletable } from "mikro-orm-soft-delete";
+import { DoggrBaseEntity } from "./DoggrBaseEntity.js";
 import { User } from "./User.js";
-import type { Rel } from "@mikro-orm/core";
 
+@SoftDeletable(() => Match, "deleted_at", () => new Date())
 @Entity()
 export class Match {
-  @ManyToOne({ primary: true })
-  owner!: Rel<User>; // person who swiped
+	// The person who performed the match/swiped right
+	@ManyToOne({ primary: true })
+	owner!: User;
 
-  @ManyToOne({ primary: true })
-  matchee!: Rel<User>; // person swiped on
+	// The account whose profile was swiped-right-on
+	@ManyToOne({ primary: true })
+	matchee!: User;
 
-  @Property()
-  created_at = new Date();
+	@Property()
+	created_at = new Date();
+
+	@Property({ nullable: true })
+	deleted_at?: Date;
 }
