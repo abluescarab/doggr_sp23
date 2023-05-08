@@ -3,9 +3,15 @@ import reactLogo from "@images/react.svg";
 import viteLogo from "/vite.svg";
 import "@css/App.css";
 
-function App() {
+// This is our first React "Component"
+export function App() {
+  // This is our frontend "State" that our component needs to keep track of/use
   const [count, setCount] = useState(0);
 
+  // React component always returns JSX, or "html-in-javascript"
+  // https://react.dev/learn/writing-markup-with-jsx
+  // In particular, note <button onClick> here uses real JS instead
+  // of a string connection like our janky version!
   return (
     <>
       <div>
