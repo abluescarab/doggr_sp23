@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from '@fastify/cors'
 import { FastifyBadWordsPlugin } from "./plugins/badwords.js";
 import { FastifySearchHttpMethodPlugin } from "./plugins/http_search.js";
 import { FastifyMikroOrmPlugin } from "./plugins/mikro.js";
@@ -33,6 +34,12 @@ const envToLogger = {
 
 const app = Fastify({
 	logger: envToLogger[process.env.NODE_ENV]
+});
+
+await app.register(cors, {
+	origin: (origin, cb) => {
+		cb(null, true);
+	}
 });
 
 await app.register(FastifyMikroOrmPlugin, config);

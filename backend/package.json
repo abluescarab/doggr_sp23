@@ -46,7 +46,9 @@
     "@mikro-orm/seeder": "5.7.3",
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
+    "cross-env": "^7.0.3",
     "fastify": "^4.15.0",
+    "@fastify/cors": "^8.2.1",
     "fastify-plugin": "^4.5.0",
     "mikro-orm-soft-delete": "^0.1.0"
   },
@@ -60,7 +62,6 @@
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
     "chai": "^4.3.7",
-    "cross-env": "^7.0.3",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "mikro": "^0.1.0",
