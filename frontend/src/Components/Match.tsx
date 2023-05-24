@@ -1,43 +1,56 @@
-import { AuthContext } from "@/App.tsx";
 import { Profile } from "@/Components/Profile.tsx";
-import InitialState, { getRandomProfile } from "@/InitialState.ts";
+import { ProfileType } from "@/DoggrTypes.ts";
 import { useAuth } from "@/Services/Auth.tsx";
+import { getNextProfileFromServer } from "@/Services/HttpClient.tsx";
+import { MatchService } from "@/Services/MatchService.tsx";
+import { PassService } from "@/Services/PassService.tsx";
 import { useContext, useEffect, useState } from "react";
 
 export const Match = () => {
+  const [currentProfile, setCurrentProfile] = useState<ProfileType>();
+  const auth = useAuth();
 
-	const [currentProfile, setCurrentProfile] = useState(InitialState.currentProfile);
-	const [likeHistory, setLikeHistory] = useState(InitialState.likeHistory);
-	const auth = useAuth();
+  const fetchProfile = () => {
+    getNextProfileFromServer()
+      .then((response) => setCurrentProfile(response))
+      .catch((err) => console.log("Error in fetch profile", err));
+  };
 
-	const onLikeButtonClick = () => {
-		const newLikeHistory = [...likeHistory, currentProfile];
-		setLikeHistory(newLikeHistory);
-		const newProfile = getRandomProfile();
-		setCurrentProfile(newProfile);
-		console.log("Added new liked profile");
-	};
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
-	const onPassButtonClick = () => {
-		const newProfile = getRandomProfile();
-		setCurrentProfile(newProfile);
-	};
+  const onLikeButtonClick = () => {
+    MatchService.send(auth.userId, currentProfile.id)
+      .then(fetchProfile)
+      .catch((err) => {
+        console.error(err);
+        fetchProfile();
+      });
+  };
 
-	useEffect(() => {
-		console.log("Match Rerendered.");
-	});
+  const onPassButtonClick = () => {
+    PassService.send(auth.userId, currentProfile.id)
+      .then(fetchProfile)
+      .catch((err) => {
+        console.error(err);
+        fetchProfile();
+      });
+  };
 
-	const profile = <Profile
-		{...currentProfile}
-		onLikeButtonClick={onLikeButtonClick}
-		onPassButtonClick={onPassButtonClick}
-	/>;
+  const profile = (
+    <Profile
+      {...currentProfile}
+      onLikeButtonClick={onLikeButtonClick}
+      onPassButtonClick={onPassButtonClick}
+    />
+  );
 
-	return (
-		<>
-			<div>"MATCH PAGE"</div>
-			<p> User logged in as {auth.token}</p>
-			{profile}
-		</>
-	);
+  return (
+    <>
+      <div>"MATCH PAGE"</div>
+      <p> User logged in as {auth.token}</p>
+      {profile}
+    </>
+  );
 };

@@ -1,33 +1,19 @@
-import { Home } from "@/Components/HomePage.tsx";
-import { Match } from "@/Components/Match.tsx";
 import { AuthProvider } from "@/Services/Auth.tsx";
-import { createContext, useContext } from "react";
-import { Link, Route, Routes, Router, BrowserRouter } from "react-router-dom";
+import { DoggrRouter } from "@/DoggrRoutes.tsx";
+import { BrowserRouter } from "react-router-dom";
 import "@css/App.css";
 
-// This is our first React "Component"
+// This is our base React Component
 export function App() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <div className="App">
-          <nav>
-            <div className="menu">
-              <Link to="/">Home</Link> ||
-              <Link to="/match">Match</Link>
-              <Link to="/login">Login</Link>
-            </div>
-          </nav>
-
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/match" element={<Match />} />
-            <Route path="/login" element={<Login />} />
-          </Routes>
-        </div>
-      </AuthProvider>
-    </BrowserRouter>
-  );
+	return (
+		<BrowserRouter>
+			<AuthProvider>
+				<div className="App">
+					<DoggrRouter/>
+				</div>
+			</AuthProvider>
+		</BrowserRouter>
+	);
 }
 
 export default App;
