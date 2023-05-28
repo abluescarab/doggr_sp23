@@ -1,20 +1,28 @@
-import { AuthProvider } from "@/Services/Auth.js";
-import { DoggrRouter } from "@/DoggrRoutes.js";
-import "@css/App.css";
-import { Link, Route, Routes, Router, BrowserRouter } from "react-router-dom";
+import { Home } from "@/Components/HomePage.tsx";
+import { Login } from "@/Components/Login.tsx";
+import { Match } from "@/Components/Match.tsx";
+import { DoggrRouter } from "@/DoggrRoutes.tsx";
+import { AuthProvider } from "@/Services/Auth.tsx";
+import {
+  Link,
+  Route,
+  Routes,
+  Router,
+  BrowserRouter,
+} from "react-router-dom";
 import "@css/DoggrStyles.css";
 
 // This is our base React Component
 export function App() {
-	return (
-		<BrowserRouter>
-			<AuthProvider>
-				<div className="App doggr">
-					<DoggrRouter/>
-				</div>
-			</AuthProvider>
-		</BrowserRouter>
-	);
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <div className="App doggr">
+          <DoggrRouter />
+        </div>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
 export default App;
