@@ -38,19 +38,17 @@ export const Match = () => {
       });
   };
 
-  const profile = (
-    <Profile
-      {...currentProfile}
-      onLikeButtonClick={onLikeButtonClick}
-      onPassButtonClick={onPassButtonClick}
-    />
-  );
+	const profile = (
+		<Profile
+			{...currentProfile}
+			onLikeButtonClick={onLikeButtonClick}
+			onPassButtonClick={onPassButtonClick}
+		/>
+	);
 
-  return (
-    <>
-      <div>"MATCH PAGE"</div>
-      <p> User logged in as {auth.token}</p>
-      {profile}
-    </>
-  );
+	return (
+		<>
+			{profile}
+		</>
+	);
 };
