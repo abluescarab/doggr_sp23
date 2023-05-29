@@ -5,10 +5,12 @@ import { getNextProfileFromServer } from "@/Services/HttpClient.tsx";
 import { MatchService } from "@/Services/MatchService.tsx";
 import { PassService } from "@/Services/PassService.tsx";
 import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const Match = () => {
   const [currentProfile, setCurrentProfile] = useState<ProfileType>();
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const fetchProfile = () => {
     getNextProfileFromServer()
@@ -38,6 +40,10 @@ export const Match = () => {
       });
   };
 
+  const onTalkButtonClick = () => {
+    navigate("/message", { state: { profile: currentProfile } });
+  };
+
   const profile = (
     <Profile
       {...currentProfile}
@@ -50,7 +56,9 @@ export const Match = () => {
     <>
       {profile}
       <div className={"my-5 flex justify-center"}>
-        <button className={"btn btn-circle"}>Talk</button>
+        <button className={"btn btn-circle"} onClick={onTalkButtonClick}>
+          Talk
+        </button>
       </div>
     </>
   );
