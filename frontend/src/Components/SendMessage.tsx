@@ -52,7 +52,7 @@ const SendMessage = () => {
         <div className={"flex flex-1 flex-row items-center w-full"}>
           <img
             className="rounded w-128 h-128 w-1/12"
-            src={profile.imgUri}
+            src={`http://localhost:9000/doggr/${profile.imgUri}`}
             alt="Profile of pet"
           />
           <p className={"font-bold pl-5 w-1/12"}>{profile.name}</p>
