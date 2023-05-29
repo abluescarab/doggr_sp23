@@ -38,17 +38,20 @@ export const Match = () => {
       });
   };
 
-	const profile = (
-		<Profile
-			{...currentProfile}
-			onLikeButtonClick={onLikeButtonClick}
-			onPassButtonClick={onPassButtonClick}
-		/>
-	);
+  const profile = (
+    <Profile
+      {...currentProfile}
+      onLikeButtonClick={onLikeButtonClick}
+      onPassButtonClick={onPassButtonClick}
+    />
+  );
 
-	return (
-		<>
-			{profile}
-		</>
-	);
+  return (
+    <>
+      {profile}
+      <div className={"my-5 flex justify-center"}>
+        <button className={"btn btn-circle"}>Talk</button>
+      </div>
+    </>
+  );
 };

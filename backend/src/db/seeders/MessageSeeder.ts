@@ -1,41 +1,43 @@
 import type { Dictionary, EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 import { Message } from "../entities/Message.js";
+import { User } from "../entities/User.js";
 
 export class MessageSeeder extends Seeder {
-	async run(em: EntityManager, context: Dictionary): Promise<void> {
-		const msgRepo = em.getRepository(Message);
+  async run(em: EntityManager, context: Dictionary): Promise<void> {
+    const msgRepo = em.getRepository(Message);
 
-		// https://mikro-orm.io/docs/seeding#shared-context
+    // https://mikro-orm.io/docs/seeding#shared-context
 
-		em.create(Message, {
-			sender: context.user1,
-			receiver: context.user2,
-			message: "*bark*",
-		});
-
-		em.create(Message, {
-			sender: context.user1,
-			receiver: context.user2,
-			message: "*bark bark*",
-		});
-
-		em.create(Message, {
-			sender: context.user1,
-			receiver: context.user2,
-			message: "plz reply",
-		});
-
-		em.create(Message, {
-			sender: context.user2,
-			receiver: context.user1,
-			message: "please stop",
-		});
-
-		em.create(Message, {
-			sender: context.user4,
-			receiver: context.user5,
-			message: "Help, I'm surrounded by dogs",
-		});
-	}
+    msgRepo.create({
+      sender: context.user1,
+      receiver: context.user2,
+      message: "Test message 1",
+    });
+    msgRepo.create({
+      sender: context.user2,
+      receiver: context.user1,
+      message: "Test message 2",
+    });
+    msgRepo.create({
+      sender: context.user3,
+      receiver: context.user2,
+      message: "Test message 3",
+    });
+    msgRepo.create({
+      sender: context.user1,
+      receiver: context.user3,
+      message: "Test message 4",
+    });
+    msgRepo.create({
+      sender: context.user2,
+      receiver: context.user3,
+      message: "Test message 5",
+    });
+    msgRepo.create({
+      sender: context.user3,
+      receiver: context.user1,
+      message: "Test message 6",
+    });
+  }
 }
